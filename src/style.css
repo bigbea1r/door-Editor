@@ -80,12 +80,12 @@ html,body
 }
 .interface{
   width: 4vw;
-  height: 10%;
+  height: 15%;
   position: absolute;
   bottom: 0px;
   display: flex;
   flex-direction: column-reverse;
-  justify-content: space-between;
+  justify-content: space-around;
   margin: 20px;
 }
 .interface button{

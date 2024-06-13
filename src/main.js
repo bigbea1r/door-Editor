@@ -26,44 +26,52 @@ gltfLoader.setDRACOLoader(dracoLoader);
 // Текстуры
 const textureLoader = new THREE.TextureLoader();
 
-let colorRed = textureLoader.load('/textures/red.jpg');
-let metal = textureLoader.load('/textures/metal.jpg');
-let colorPerple = textureLoader.load('/textures/perple.jpg');
-let doorBrown = textureLoader.load('/textures/door.png');
-let doorSilver = textureLoader.load('/textures/door_silver.png');
-let doorGrey = textureLoader.load('/textures/door_grey.png');
-let screenTexture = textureLoader.load('/textures/Desk_small_screen_base_col.png'); 
+// Функция загрузки текстур
+const loadTexture = (path) => {
+  const texture = textureLoader.load(path);
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.wrapS = THREE.RepeatWrapping;
+  return texture;
+};
 
-screenTexture.wrapT = THREE.RepeatWrapping;
-screenTexture.wrapS = THREE.RepeatWrapping;
+// BC
+const D1_baseColor = loadTexture('/textures/BaseColor/D1_wood1. DoorBase. BC.png');
+const D2_baseColor = loadTexture('/textures/BaseColor/D2_wood2. DoorBase. BC.png');
+const D3_BC_Plastic = loadTexture('/textures/BaseColor/D3_BlackPlastic. DoorBase. BC.png');
+const H1_baseColor = loadTexture('/textures/BaseColor/H1_Silver. Handle. BC.png');
+const H2_G_baseColor = loadTexture('/textures/BaseColor/H2_Gold. Handle. BC.png');
+const H3_GP_baseColor = loadTexture('/textures/BaseColor/H3_GlossyPlastic. Handle. BC.png');
+const W1_baseColor = loadTexture('/textures/BaseColor/W1_Glass. Window. BC.png');
+const W2_M_baseColor = loadTexture('/textures/BaseColor/W2_Mirror. Window. BC.png');
+const W3_MG_baseColor = loadTexture('/textures/BaseColor/W3_MatteGlass. Window. BC.png');
 
-metal.wrapT = THREE.RepeatWrapping;
-metal.wrapS = THREE.RepeatWrapping;
-colorPerple.wrapT = THREE.RepeatWrapping;
-colorPerple.wrapS = THREE.RepeatWrapping;
-colorRed.wrapT = THREE.RepeatWrapping;
-colorRed.wrapS = THREE.RepeatWrapping;
+// RoughMet
+const D1_Rough = loadTexture('/textures/RoughMet/D1_wood1. DoorBase. RoughMet.png');
+const D2_Rough = loadTexture('/textures/RoughMet/D2_wood2. DoorBase. RoughMet.png');
+const D3_Rough = loadTexture('/textures/RoughMet/D3_BlackPlastic. DoorBase. RoughMet.png');
 
-doorBrown.wrapT = THREE.RepeatWrapping;
-doorBrown.wrapS = THREE.RepeatWrapping;
-doorSilver.wrapT = THREE.RepeatWrapping;
-doorSilver.wrapS = THREE.RepeatWrapping;
-doorGrey.wrapT = THREE.RepeatWrapping;
-doorGrey.wrapS = THREE.RepeatWrapping;
+// NRM
+const D2_NRM = loadTexture('/textures/NRM/D2_wood2. DoorBase. NRM.png');
+
 
 // Создание группы для источников света
 const lightHolder = new THREE.Group();
 
-// Создание и добавление освещения
-const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-lightHolder.add(ambientLight);
+//Создание и добавление освещения
+// const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+// lightHolder.add(ambientLight);
 
-const light = new THREE.PointLight(0xffffff, 0.6);
-light.position.set(2, 3, 4);
-lightHolder.add(light);
+const firstLight = new THREE.PointLight(0xffffff, 1);
+firstLight.position.set(-1, 1, 3);
+lightHolder.add(firstLight);
+const secondLight = new THREE.PointLight(0xffffff, 1);
+secondLight.position.set(1, 1, -3);
+lightHolder.add(secondLight);
 
 scene.add(lightHolder);
 
+// const pointLightHelper = new THREE.PointLightHelper( firstLight );
+// scene.add( pointLightHelper );
 // Размеры
 const sizes = {
     width: window.innerWidth,
@@ -83,7 +91,7 @@ window.addEventListener('resize', () => {
 
 // Камера
 const camera = new THREE.PerspectiveCamera(25, sizes.width / sizes.height, 0.1, 100);
-camera.position.set(0, 2, 5);
+camera.position.set(0, 1, 6);
 scene.add(camera);
 
 // Управление
@@ -98,142 +106,148 @@ const renderer = new THREE.WebGLRenderer({
 renderer.localClippingEnabled = true;
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setClearColor('#313131', 1);
+renderer.setClearColor('#00ff00', 1); //"#cfcfcf"
 
 // Загрузка моделей и скрытие прелоадера после загрузки
 const loadPromises = [];
 
-let firstTableBase;
-let firstScreen;
-let firstTableTop;
-let firstLegs;
-let firstTableBaseScreen;
+let Door;
+let Box;
+let Handle1;
+let Window;
 
-let secondTableBase;
-let secondScreen;
-let secondTableTop;
-let secondLegs;
-let secondTableBaseScreen
 
-let groupModalSecond
+let groupModelSecond
 // Загрузка модели стола
 loadPromises.push(new Promise((resolve, reject) => {
     gltfLoader.load(
-        '/models/table.glb',
+        '/models/DoorSmall. Closed.glb',
         (gltf) => {
-            const sceneGlb = gltf.scene;
-            console.log(sceneGlb);
+            const firstModel = gltf.scene;
+            console.log(firstModel);
             //Элементы обычного стола
-            firstTableBase = sceneGlb.getObjectByName('Cube018');
-            firstScreen = sceneGlb.getObjectByName('Cube018_1');
-            firstTableTop = sceneGlb.getObjectByName('Desk_low');
-            firstLegs = sceneGlb.getObjectByName('feet_low');
-            firstTableBaseScreen = sceneGlb.getObjectByName('upper_frame_low');
+            Door = firstModel.getObjectByName('Door');
+            Box = firstModel.getObjectByName('Box');
+            Handle1 = firstModel.getObjectByName('Handle1');
+            Window = firstModel.getObjectByName('Window');
+            firstModel.rotation.y = 1.58; 
+            firstModel.position.y = -0.8;
+            firstModel.visible = true;
+
+
+            // Создание группы для обычного стола
+            let groupModelFirst = new THREE.Group();
+            groupModelFirst.add(Door);
+            groupModelFirst.add(Box);
+            groupModelFirst.add(Handle1);
+            groupModelFirst.add(Window);
+            //убрать данные костыли
+            groupModelFirst.rotation.y = 1.58; 
+            groupModelFirst.position.y = -0.8;
+            Window.position.x = 0.025;
+            Window.position.y = 0;
+            Window.position.z = 0;
+
+            scene.add(groupModelFirst);
 
             //массивы для построения кнопок
-            let texturesTableTop = [
-                { texture: doorBrown, name: "Дерево" },
-                { texture: doorSilver, name: "Серебро" },
-                { texture: doorGrey, name: "Серый" },
-                { texture: metal, name: "Металл" },
-                { texture: colorPerple, name: "Фиолетовый" },
-                { texture: colorRed, name: "Бордовый" },
+            let door = [];
+            let doorLeaf = [
+                { texture: D1_baseColor, name: "Светлое дерево" },
+                { texture: D2_baseColor, name: "Темное дерево" },
+                { texture: D3_BC_Plastic, name: "Чёрный пластик" },
             ];
-            let table = [];
+            let doorHandle = [
+                { texture: H1_baseColor, name: "Серебренная" },
+                { texture: H2_G_baseColor, name: "Золотистая" },
+                { texture: H3_GP_baseColor, name: "Белый пластик" },
+            ];
+            let doorWindow = [
+                { texture: W1_baseColor, name: "Прозрачное" },
+                { texture: W2_M_baseColor, name: "Матовое" },
+                { texture: W3_MG_baseColor, name: "Полупрозрачное" },
+            ];
 
-            //наложение текстуры экранчику
-            firstScreen.material.map = screenTexture;
 
-            //Создание группы для обычного стола
-            let groupModalFirst = new THREE.Group();
-            groupModalFirst.add(firstTableBaseScreen);
-            groupModalFirst.add(firstTableBase);
-            groupModalFirst.add(firstScreen);
-            groupModalFirst.add(firstTableTop);
-            groupModalFirst.add(firstLegs);
-            groupModalFirst.position.y = -0.5;
-
-            scene.add(groupModalFirst);
-            //Клонирование материалов для обычного стола
-            firstTableBase.material = firstTableBase.material.clone();
-            firstScreen.material = firstScreen.material.clone();
-            firstTableTop.material = firstTableTop.material.clone();
-            firstLegs.material = firstLegs.material.clone();
-
-            firstScreen.material.map = screenTexture;
-            //Настройка высоты стола
-            document.getElementById("sizes").onclick = () => {
-                let containers = document.getElementsByClassName("dat-gui-container");
-                viewModal.openMenu(containers)
-
-                viewModal.settingsPosition(firstTableTop);
-                viewModal.settingsPosition(firstTableBase);
-                viewModal.settingsPosition(firstScreen);
-            };
-            //Создание большого стола
+            // Создание большого стола
             gltfLoader.load(
-                '/models/tableBig.glb',
+                '/models/DoorBig. Closed.glb',
                 (gltf) => {
-                    const tableBaseModel = gltf.scene;
-                    tableBaseModel.visible = false;
-                    secondTableBase = tableBaseModel.getObjectByName('Cube018');
-                    secondScreen = tableBaseModel.getObjectByName('Cube018_1');
-                    secondTableTop = tableBaseModel.getObjectByName('Desk_low');
-                    secondLegs = tableBaseModel.getObjectByName('feet_low');
-                    secondTableBaseScreen = tableBaseModel.getObjectByName('upper_frame_low');
-                    
-                    //Создание группы для большого стола
-                    groupModalSecond = new THREE.Group(); 
-                    groupModalSecond.visible = false; 
-                    groupModalSecond.add(secondTableBaseScreen);
-                    groupModalSecond.add(secondTableBase);
-                    groupModalSecond.add(secondScreen);
-                    groupModalSecond.add(secondTableTop);
-                    groupModalSecond.add(secondLegs);
-                    groupModalSecond.position.y = -0.5;
-            
-                    scene.add(groupModalSecond);
-                    //Клонирование материалов
-                    secondTableBase.material = secondTableBase.material.clone();
-                    secondScreen.material = secondScreen.material.clone();
-                    secondTableTop.material = secondTableTop.material.clone();
-                    secondLegs.material = secondLegs.material.clone();
-            
-                    //Растянул основание с экранчиком. Аля костыль
-                    secondTableBase.scale.x = 1.2;
-                    secondScreen.scale.x = 1.2;
-            
-                    //наложение текстуры экранчику
-                    secondScreen.material.map = screenTexture;
-                    //Настройка высоты стола
-                    viewModal.settingsPosition(secondTableTop);
-                    viewModal.settingsPosition(secondTableBase);
-                    viewModal.settingsPosition(secondScreen);
+                    const secondModel = gltf.scene;
+                    console.log(secondModel)
+                    secondModel.visible = false;
 
-                    //
-                    viewModal.createNewModel(groupModalSecond, sceneGlb.parent.children[2]);
+                    let secondDoorRight = secondModel.getObjectByName("door_big_R");
+                    let secondDoorLeft = secondModel.getObjectByName("door_big_L");
+                    let secondDoorBox = secondModel.getObjectByName("door_big_box");
+
+                    let secondHandleRight = secondModel.getObjectByName("hande_big_R");
+                    let secondHandleLeft = secondModel.getObjectByName("hande_big_L");
+
+                    let secondWindowRight = secondModel.getObjectByName("win_big_r");
+                    let secondWindowLeft = secondModel.getObjectByName("win_big_L");
+
+                    //убрать данные костыли
+                    secondModel.rotation.y = 1.58;
+                    secondModel.position.y = -0.8;
+
+
+                    //Создание группы для большого стола
+                    groupModelSecond = new THREE.Group(); 
+                    groupModelSecond.visible = false; 
+
+                    groupModelSecond.add(secondDoorRight);
+                    groupModelSecond.add(secondDoorLeft);
+                    groupModelSecond.add(secondDoorBox);
+                    groupModelSecond.add(secondHandleRight);
+                    groupModelSecond.add(secondHandleLeft);
+                    groupModelSecond.add(secondWindowRight);
+                    groupModelSecond.add(secondWindowLeft);
+
+                    groupModelSecond.rotation.y = 1.58;
+                    groupModelSecond.position.y = -0.8;
             
-                    // Обновление массива table, добавляем вторые объекты
-                    table.push(
-                        { object: { first: firstTableTop, second: secondTableTop }, name: "Столешница" },
-                        { object: { first: firstLegs, second: secondLegs }, name: "Ножки основания" }
+                    scene.add(groupModelSecond);
+                    //Клонирование материалов
+
+                    secondDoorRight.material = secondDoorRight.material.clone();
+                    secondDoorLeft.material = secondDoorLeft.material.clone();
+                    secondDoorBox.material = secondDoorBox.material.clone();
+                    secondHandleRight.material = secondHandleRight.material.clone();
+                    secondHandleLeft.material = secondHandleLeft.material.clone();
+                    secondWindowRight.material = secondWindowRight.material.clone();
+                    secondWindowLeft.material = secondWindowLeft.material.clone();
+
+
+                    //замена моделей
+                    viewModal.createNewModel(groupModelFirst, groupModelSecond);
+            
+                    // Обновление массива door, добавляем вторые объекты
+                    door.push(
+                        { id:1, object: { first: Door, second: secondDoorLeft, third: secondDoorRight, fourth: secondDoorBox}, name: "Полотно и коробка" },
+                        { id:2, object: { first: Handle1, second: secondHandleRight, third: secondHandleLeft }, name: "Ручка" },
+                        { id:3, object: { first: Window, second: secondWindowRight, third: secondWindowLeft }, name: "Стекло" },
+
                     );
-                    scene.add(tableBaseModel);
+                    console.log(door)
+                    scene.add(secondModel);
                 });
                 document.getElementById("textures").onclick = () => {
                     const elemProduct = document.getElementById("elem_product");
+                    const selectorTextures = document.getElementById("selector_textures")
                     viewModal.openMenu1(elemProduct);
+                    viewModal.openMenu1(selectorTextures);
                     elemProduct.innerHTML = "";
                 
-                    table.forEach(objectItem => {
+                    door.forEach(objectItem => {
                         const button = document.createElement("button");
                         button.textContent = objectItem.name;
-                        button.onclick = () => viewModal.selTableBase(texturesTableTop, objectItem.object, "selector_textures", groupModalFirst, groupModalSecond, metal);
+                        button.onclick = () => viewModal.selObjModels(doorLeaf, doorHandle, doorWindow, objectItem, "selector_textures", groupModelFirst, groupModelSecond);
                         elemProduct.appendChild(button);
                     });
                 };
                 
-            scene.add(sceneGlb);
+            scene.add(firstModel);
 
             resolve();
         },
@@ -257,7 +271,8 @@ Promise.all(loadPromises).then(() => {
 const tick = () => {
     controls.update();
     renderer.render(scene, camera);
-    lightHolder.quaternion.copy(camera.quaternion);
+    firstLight.quaternion.copy(camera.quaternion);
+    secondLight.quaternion.copy(camera.quaternion);
     window.requestAnimationFrame(tick);
 };
 
